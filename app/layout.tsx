@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "WorkIndia — Skill Certification",
-  description: "Prove your skills. Stand out from 100s of applicants.",
+  title: "WorkIndia — Certifications",
+  description: "Get verified. Get found. Get hired.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

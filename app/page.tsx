@@ -109,7 +109,7 @@ export default function Home() {
           <div className="demo-bar" style={{ paddingTop: 8 }}>
             <span style={{ fontSize: 10, color: "#64748B", fontWeight: 700, letterSpacing: ".05em" }}>DEMO:</span>
             <button className={`demo-chip ${user === "free" ? "on" : ""}`} onClick={() => setUser("free")}>Free</button>
-            <button className={`demo-chip ${user === "p2" ? "on" : ""}`} onClick={() => setUser("p2")}>Premium(2)</button>
+            <button className={`demo-chip ${user === "p2" ? "on" : ""}`} onClick={() => setUser("p2")}>Premium(1)</button>
             <button className={`demo-chip ${user === "p0" ? "on" : ""}`} onClick={() => setUser("p0")}>Premium(0)</button>
             <div className="demo-div" />
             <button className={`demo-chip ${result === "pass" ? "on" : ""}`} onClick={() => setResult("pass")}>Pass</button>
@@ -121,12 +121,11 @@ export default function Home() {
           </div>
 
           <div style={{ background: "linear-gradient(135deg,#2563EB 0%,#1D4ED8 100%)", padding: "18px 20px 22px", color: "#fff" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-              <span style={{ fontSize: 18, opacity: 0.8, cursor: "pointer" }}>←</span>
-              <span style={{ fontSize: 17, fontWeight: 800 }}>Skill Tests</span>
+            <div style={{ marginBottom: 12 }}>
+              <span style={{ fontSize: 17, fontWeight: 800 }}>Certifications</span>
             </div>
             <p style={{ fontSize: 22, fontWeight: 900, lineHeight: 1.25, margin: 0 }}>
-              Prove your skills.<br />Stand out from 100s of applicants.
+              Get verified.<br />Get found. Get hired.
             </p>
           </div>
 
@@ -158,7 +157,7 @@ export default function Home() {
                   } else if (user === "p2") {
                     actionLabel = "💎 Use credit & unlock";
                     actionBg = "linear-gradient(135deg,#7C3AED,#6D28D9)";
-                    extraNote = "1 of 2 free credits";
+                    extraNote = "Your free credit this month";
                     onClick = () => { pickSkill(p.name, p.icon); go("success"); };
                   } else {
                     actionLabel = "🔓 Unlock — Rs 49";
@@ -181,42 +180,6 @@ export default function Home() {
                 })}
               </div>
             )}
-
-            <div style={{ padding: "14px 20px 0" }}>
-              {user === "free" ? (
-                <>
-                  <div className="premium-card" style={{ marginBottom: 10 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, position: "relative", zIndex: 1 }}>
-                      <span style={{ fontSize: 20 }}>💎</span>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: "var(--purple-dark)" }}>WorkIndia Premium — Rs 199/month</div>
-                    </div>
-                    <div style={{ fontSize: 12, color: "var(--g600)", lineHeight: 1.5, marginBottom: 6, position: "relative", zIndex: 1 }}>
-                      Get <strong>2 free certificates every month</strong> + top ranking + WhatsApp job alerts
-                    </div>
-                    <div style={{ fontSize: 11, color: "var(--purple)", fontWeight: 700, fontStyle: "italic", marginBottom: 10, position: "relative", zIndex: 1 }}>
-                      Premium gets you more calls. Verified skills win the interview.
-                    </div>
-                    <button className="btn btn-purple" style={{ minHeight: 44, fontSize: 14, padding: 12 }}>Become a Premium Member →</button>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "#fff", border: "1px solid var(--g200)", borderRadius: 14 }}>
-                    <span style={{ fontSize: 18 }}>🏷️</span>
-                    <div style={{ fontSize: 13, color: "var(--g700)" }}>Or unlock certificates individually for <strong>Rs 99</strong> each</div>
-                  </div>
-                </>
-              ) : (
-                <div className="premium-card">
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, position: "relative", zIndex: 1 }}>
-                    <span className="tag" style={{ background: "var(--purple)", color: "#fff", fontSize: 11 }}>💎 Premium Member</span>
-                  </div>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: "var(--purple-dark)", position: "relative", zIndex: 1 }}>
-                    {user === "p2" ? 2 : 0} free certificate credit{user === "p2" ? "s" : ""} available
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--g500)", marginTop: 2, position: "relative", zIndex: 1 }}>
-                    {user === "p2" ? "Unlock certificates instantly with your credits" : "Credits reset on 1st of next month"}
-                  </div>
-                </div>
-              )}
-            </div>
 
             <div style={{ padding: "16px 20px 4px" }}>
               <div style={{ fontSize: 15, fontWeight: 800, color: "var(--g900)", marginBottom: 4 }}>Recommended for your profile</div>
@@ -279,8 +242,46 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Pricing / Premium status — moved below tests */}
+            <div style={{ padding: "20px 20px 0" }}>
+              {user === "free" ? (
+                <>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: "var(--g400)", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 10 }}>How to unlock</div>
+                  <div className="premium-card" style={{ marginBottom: 10 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, position: "relative", zIndex: 1 }}>
+                      <span style={{ fontSize: 20 }}>💎</span>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: "var(--purple-dark)" }}>WorkIndia Premium — Rs 199/month</div>
+                    </div>
+                    <div style={{ fontSize: 12, color: "var(--g600)", lineHeight: 1.5, marginBottom: 6, position: "relative", zIndex: 1 }}>
+                      Get <strong>1 free certificate every month</strong> + top ranking + WhatsApp job alerts
+                    </div>
+                    <div style={{ fontSize: 11, color: "var(--purple)", fontWeight: 700, fontStyle: "italic", marginBottom: 10, position: "relative", zIndex: 1 }}>
+                      Premium gets you more calls. Verified skills win the interview.
+                    </div>
+                    <button className="btn btn-purple" style={{ minHeight: 44, fontSize: 14, padding: 12 }}>Become a Premium Member →</button>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "#fff", border: "1px solid var(--g200)", borderRadius: 14 }}>
+                    <span style={{ fontSize: 18 }}>🏷️</span>
+                    <div style={{ fontSize: 13, color: "var(--g700)" }}>Or unlock certifications individually for <strong>Rs 99</strong> each</div>
+                  </div>
+                </>
+              ) : (
+                <div className="premium-card">
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, position: "relative", zIndex: 1 }}>
+                    <span className="tag" style={{ background: "var(--purple)", color: "#fff", fontSize: 11 }}>💎 Premium Member</span>
+                  </div>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: "var(--purple-dark)", position: "relative", zIndex: 1 }}>
+                    {user === "p2" ? "1 free certificate this month" : "Free credit used this month"}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--g500)", marginTop: 2, position: "relative", zIndex: 1 }}>
+                    {user === "p2" ? "Unlock instantly — no payment needed" : "Resets on 1st · Extras at Rs 49"}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div style={{ padding: "16px 20px" }}>
-              <button className="btn btn-ghost">🔍 Browse all 25+ skill tests</button>
+              <button className="btn btn-ghost">🔍 Browse all certifications</button>
             </div>
 
             <div style={{ padding: "0 0 8px" }}>
@@ -392,7 +393,7 @@ export default function Home() {
                 <>
                   <div className="card" style={{ background: "var(--purple-light)", border: "1px solid #DDD6FE", marginBottom: 8 }}>
                     <div style={{ fontSize: 13, fontWeight: 700, color: "var(--purple-dark)", marginBottom: 4 }}>💎 Free with Premium</div>
-                    <div style={{ fontSize: 12, color: "var(--g600)", lineHeight: 1.5 }}>Premium members (Rs 199/mo) get <strong>2 certificates free every month</strong></div>
+                    <div style={{ fontSize: 12, color: "var(--g600)", lineHeight: 1.5 }}>Premium members (Rs 199/mo) get <strong>1 certificate free every month</strong></div>
                   </div>
                   <div className="card" style={{ background: "var(--g50)", borderColor: "var(--g200)" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -407,7 +408,7 @@ export default function Home() {
                     <span className="tag" style={{ background: "var(--purple)", color: "#fff" }}>💎 Premium</span>
                   </div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "var(--purple-dark)", position: "relative", zIndex: 1 }}>
-                    {user === "p2" ? "Use 1 of your 2 free credits to unlock after passing" : "Discounted unlock at Rs 49 after passing"}
+                    {user === "p2" ? "Use your free credit this month to unlock after passing" : "Discounted unlock at Rs 49 after passing"}
                   </div>
                   <div style={{ fontSize: 12, color: "var(--g500)", marginTop: 2, position: "relative", zIndex: 1 }}>
                     {user === "p2" ? "One tap unlock, no payment" : "Your free credits reset on 1 June"}
@@ -484,13 +485,19 @@ export default function Home() {
               </div>
               {user === "free" && (
                 <>
+                  <div style={{ background: "var(--brand-light)", border: "1px solid var(--brand-50)", borderRadius: 12, padding: "10px 12px", marginBottom: 12, display: "flex", gap: 8, alignItems: "flex-start" }}>
+                    <span style={{ fontSize: 16, flexShrink: 0 }}>🎯</span>
+                    <div style={{ fontSize: 12, color: "var(--g700)", lineHeight: 1.4 }}>
+                      Your verified badge shows on top of your profile. Recruiters search for verified candidates.
+                    </div>
+                  </div>
                   <button className="btn btn-brand" onClick={() => setUnlockOpen(true)} style={{ fontSize: 16, marginBottom: 10 }}>🔓 Unlock Certificate</button>
-                  <div style={{ textAlign: "center", fontSize: 12, color: "var(--g500)" }}>Use Premium membership or pay Rs 99 one-time</div>
+                  <div style={{ textAlign: "center", fontSize: 12, color: "var(--g500)" }}>Buy Premium membership · Or Rs 99 one-time</div>
                 </>
               )}
               {user === "p2" && (
                 <>
-                  <button className="btn btn-purple" onClick={() => go("success")} style={{ marginBottom: 8, fontSize: 16 }}>💎 Unlock with Premium credit (1 of 2)</button>
+                  <button className="btn btn-purple" onClick={() => go("success")} style={{ marginBottom: 8, fontSize: 16 }}>💎 Unlock with Premium credit</button>
                   <div style={{ textAlign: "center", fontSize: 12, color: "var(--g500)", marginTop: 8 }}>One tap · No payment · Instant unlock</div>
                 </>
               )}
@@ -606,7 +613,7 @@ export default function Home() {
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 12, color: "var(--g700)", marginTop: 10, lineHeight: 1.4 }}>
                     <BulletRow><>This certificate <strong>free</strong></></BulletRow>
-                    <BulletRow>2 certificates free every month</BulletRow>
+                    <BulletRow>1 certificate free every month</BulletRow>
                     <BulletRow>Top ranking in recruiter search</BulletRow>
                     <BulletRow>WhatsApp &amp; email job alerts</BulletRow>
                     <BulletRow>Higher daily apply limit</BulletRow>
@@ -649,23 +656,23 @@ export default function Home() {
 // ===== Sub-components =====
 
 function StepHeader({ step, variant, onBack }: { step: 1 | 2 | 3; variant?: "pass" | "fail"; onBack: () => void }) {
-  const d1 = step >= 1, d2 = step >= 2, d3 = step >= 3;
+  const d2 = step >= 2, d3 = step >= 3;
   const c1 = step === 1, c2 = step === 2, c3 = step === 3;
   return (
-    <div style={{ display: "flex", alignItems: "center", padding: "12px 16px", background: "#fff", borderBottom: "1px solid var(--g100)", gap: 8 }}>
-      <button onClick={onBack} style={{ width: 36, height: 36, borderRadius: "50%", border: "none", background: "var(--g100)", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>←</button>
-      <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
-        <div style={{ textAlign: "center" }}>
-          <div className={`sD ${c1 ? "cur" : d1 ? "done" : ""}`}>{c1 ? "1" : "✓"}</div>
+    <div style={{ position: "relative", padding: "12px 16px 14px", background: "#fff", borderBottom: "1px solid var(--g100)" }}>
+      <button onClick={onBack} style={{ position: "absolute", left: 12, top: 10, width: 32, height: 32, borderRadius: "50%", border: "none", background: "var(--g100)", cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>←</button>
+      <div style={{ display: "flex", alignItems: "center", maxWidth: 280, margin: "0 auto" }}>
+        <div style={{ textAlign: "center", flexShrink: 0 }}>
+          <div className={`sD ${c1 ? "cur" : "done"}`}>{c1 ? "1" : "✓"}</div>
           <div className={`sT ${c1 ? "cur" : "done"}`}>Details</div>
         </div>
         <div className={`sL ${d2 ? "done" : ""}`} />
-        <div style={{ textAlign: "center" }}>
+        <div style={{ textAlign: "center", flexShrink: 0 }}>
           <div className={`sD ${c2 ? "cur" : d2 ? "done" : ""}`}>{c2 ? "2" : d2 ? "✓" : "2"}</div>
           <div className={`sT ${c2 ? "cur" : d2 ? "done" : ""}`}>Test</div>
         </div>
         <div className={`sL ${d3 ? "done" : ""}`} />
-        <div style={{ textAlign: "center" }}>
+        <div style={{ textAlign: "center", flexShrink: 0 }}>
           <div
             className="sD"
             style={
