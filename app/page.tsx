@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { SKILLS, QUESTIONS, REVIEWS, type Skill, type Pending, type UserType, type ResultType, type ScreenId } from "@/lib/data";
+import { SKILLS, CLUSTERS, ALL_SKILLS, QUESTIONS_BY_SKILL, getQuestionsFor, REVIEWS, type Skill, type Pending, type UserType, type ResultType, type ScreenId, type Question } from "@/lib/data";
 
 export default function Home() {
   const [user, setUser] = useState<UserType>("free");
@@ -24,7 +24,8 @@ export default function Home() {
       if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
-    setTimer(40);
+    const seconds = ALL_SKILLS.find((s) => s.name === skill.name)?.perQSec ?? 40;
+    setTimer(seconds);
     setSel(-1);
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
@@ -33,7 +34,7 @@ export default function Home() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [qIdx, screen]);
+  }, [qIdx, screen, skill.name]);
 
   useEffect(() => {
     if (screen === "resultPass") {
@@ -62,9 +63,12 @@ export default function Home() {
   const pickSkill = (name: string, icon: string) => setSkill({ name, icon });
   const pick = (i: number) => setSel(i);
 
+  const activeQuestions: Question[] = getQuestionsFor(skill.name);
+  const activeSkill: Skill | undefined = ALL_SKILLS.find((s) => s.name === skill.name);
+
   const nextQ = () => {
     if (timerRef.current) clearInterval(timerRef.current);
-    if (qIdx + 1 >= QUESTIONS.length) {
+    if (qIdx + 1 >= activeQuestions.length) {
       go(result === "pass" ? "resultPass" : "resultFail");
       return;
     }
@@ -94,11 +98,12 @@ export default function Home() {
           <div className="dnav-menu">
             <div style={{ padding: "6px 12px", fontWeight: 800, color: "#fff", fontSize: 12, borderBottom: "1px solid #1E293B", marginBottom: 4 }}>Screens</div>
             <button onClick={() => go("landing")}>1. Landing</button>
-            <button onClick={() => go("detail")}>2. Test Detail</button>
-            <button onClick={() => go("quiz")}>3. Quiz</button>
-            <button onClick={() => go("resultPass")}>4A. Pass</button>
-            <button onClick={() => go("resultFail")}>4B. Fail</button>
-            <button onClick={() => go("success")}>5. Success</button>
+            <button onClick={() => go("browse")}>2. Browse All</button>
+            <button onClick={() => go("detail")}>3. Test Detail</button>
+            <button onClick={() => go("quiz")}>4. Quiz</button>
+            <button onClick={() => go("resultPass")}>5A. Pass</button>
+            <button onClick={() => go("resultFail")}>5B. Fail</button>
+            <button onClick={() => go("success")}>6. Success</button>
           </div>
         )}
       </div>
@@ -281,7 +286,7 @@ export default function Home() {
             </div>
 
             <div style={{ padding: "16px 20px" }}>
-              <button className="btn btn-ghost">🔍 Browse all certifications</button>
+              <button className="btn btn-ghost" onClick={() => go("browse")}>🔍 Browse all certifications</button>
             </div>
 
             <div style={{ padding: "0 0 8px" }}>
@@ -320,6 +325,37 @@ export default function Home() {
           </div>
         </div>
 
+        {/* ===== BROWSE ALL ===== */}
+        <div className={screenClass("browse")}>
+          <BrowseHeader onBack={() => go("landing")} />
+          <div style={{ flex: 1, overflowY: "auto", background: "var(--g50)" }}>
+            <BrowseTopBar />
+            <div style={{ padding: "8px 20px 24px" }}>
+              {CLUSTERS.map((cluster) => (
+                <div key={cluster.title} style={{ marginBottom: 20 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "#fff", border: "1px solid var(--g200)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{cluster.emoji}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: "var(--g900)" }}>{cluster.title}</div>
+                      <div style={{ fontSize: 11, color: "var(--g500)", marginTop: 1 }}>{cluster.subtitle}</div>
+                    </div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "var(--g400)", padding: "3px 8px", background: "#fff", border: "1px solid var(--g200)", borderRadius: 6, flexShrink: 0 }}>{cluster.skills.length}</div>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {cluster.skills.map((s) => <SkillCard key={s.name} s={s} user={user} onClick={() => { pickSkill(s.name, s.icon); go("detail"); }} />)}
+                  </div>
+                </div>
+              ))}
+
+              <div style={{ marginTop: 24, padding: 16, background: "#fff", border: "1px dashed var(--g300)", borderRadius: 12, textAlign: "center" }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--g700)", marginBottom: 4 }}>Don&apos;t see your skill?</div>
+                <div style={{ fontSize: 12, color: "var(--g500)", marginBottom: 10 }}>New certifications are added every month</div>
+                <button style={{ background: "transparent", border: "none", color: "var(--brand)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Request a certification →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* ===== DETAIL ===== */}
         <div className={screenClass("detail")}>
           <StepHeader step={1} onBack={() => go("landing")} />
@@ -327,10 +363,13 @@ export default function Home() {
             <div style={{ textAlign: "center", padding: "24px 20px 16px" }}>
               <div style={{ fontSize: 56, marginBottom: 6 }}>{skill.icon}</div>
               <h1 style={{ fontSize: 24, fontWeight: 900, color: "var(--g900)", margin: 0 }}>{skill.name}</h1>
-              <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 12 }}>
-                <span className="tag" style={{ background: "var(--brand-light)", color: "var(--brand)" }}>📝 15 Qs</span>
-                <span className="tag" style={{ background: "var(--amber-light)", color: "var(--amber-dark)" }}>⏱ 10 min</span>
-                <span className="tag" style={{ background: "var(--green-light)", color: "var(--green-dark)" }}>✅ 70% pass</span>
+              {activeSkill?.desc && (
+                <p style={{ fontSize: 13, color: "var(--g500)", margin: "6px 0 0", lineHeight: 1.4 }}>{activeSkill.desc}</p>
+              )}
+              <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+                <span className="tag" style={{ background: "var(--brand-light)", color: "var(--brand)" }}>📝 {activeSkill?.qPerAttempt ?? 15} Qs</span>
+                <span className="tag" style={{ background: "var(--amber-light)", color: "var(--amber-dark)" }}>⏱ {Math.round((activeSkill?.timeSec ?? 600) / 60)} min</span>
+                <span className="tag" style={{ background: "var(--green-light)", color: "var(--green-dark)" }}>✅ {activeSkill?.passPct ?? 70}% pass</span>
               </div>
             </div>
             <div style={{ padding: "0 20px 14px" }}>
@@ -364,9 +403,9 @@ export default function Home() {
                 </div>
                 {sampleOpen && (
                   <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px dashed var(--brand-50)" }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "var(--g900)", marginBottom: 10 }}>{QUESTIONS[0].q}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "var(--g900)", marginBottom: 10 }}>{activeQuestions[0]?.q}</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                      {QUESTIONS[0].o.map((o, i) => (
+                      {activeQuestions[0]?.o.map((o, i) => (
                         <div key={i} style={{ padding: "9px 12px", border: "1.5px solid var(--g200)", borderRadius: 10, background: "#fff", fontSize: 12, color: "var(--g700)", display: "flex", alignItems: "center", gap: 8 }}>
                           <span style={{ width: 22, height: 22, borderRadius: "50%", background: "var(--g100)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 11, color: "var(--g500)" }}>{"ABCD"[i]}</span>{o}
                         </div>
@@ -381,8 +420,9 @@ export default function Home() {
               <div className="card">
                 <div style={{ fontSize: 14, fontWeight: 800, color: "var(--g900)", marginBottom: 10 }}>📋 Test rules</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 7, fontSize: 13, color: "var(--g700)" }}>
-                  <div>⏱ 40 seconds per question</div>
-                  <div>🎯 Pass mark: 11/15 correct (70%)</div>
+                  <div>⏱ {activeSkill?.perQSec ?? 40} seconds per question</div>
+                  <div>🎯 Pass mark: {activeSkill?.passCorrect ?? 11}/{activeSkill?.qPerAttempt ?? 15} correct ({activeSkill?.passPct ?? 70}%)</div>
+                  <div>🎲 {activeSkill?.qPerAttempt ?? 15} questions randomly served from a bank of {activeSkill?.totalBank ?? 40}</div>
                   <div>🚫 Can&apos;t go back to previous questions</div>
                   <div>🔄 Unlimited retakes — no penalty</div>
                 </div>
@@ -429,18 +469,18 @@ export default function Home() {
           <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "16px 20px 20px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--g900)" }}>Question {qIdx + 1} of 15</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--g900)" }}>Question {qIdx + 1} of {activeSkill?.qPerAttempt ?? 15}</div>
                 <div style={{ fontSize: 11, color: "var(--g400)", marginTop: 2 }}>{skill.name} Test</div>
               </div>
               <div className={`timer-circle ${timer <= 10 ? "timer-warn" : "timer-ok"}`}>{timer}</div>
             </div>
             <div className="prog-track" style={{ marginBottom: 24 }}>
-              <div className="prog-fill" style={{ width: `${((qIdx + 1) / 15) * 100}%` }} />
+              <div className="prog-fill" style={{ width: `${((qIdx + 1) / (activeSkill?.qPerAttempt ?? 15)) * 100}%` }} />
             </div>
             <div style={{ flex: 1 }}>
-              <h2 style={{ fontSize: 18, fontWeight: 800, lineHeight: 1.5, color: "var(--g900)", marginBottom: 24 }}>{QUESTIONS[qIdx]?.q}</h2>
+              <h2 style={{ fontSize: 18, fontWeight: 800, lineHeight: 1.5, color: "var(--g900)", marginBottom: 24 }}>{activeQuestions[qIdx]?.q}</h2>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {QUESTIONS[qIdx]?.o.map((o, i) => (
+                {activeQuestions[qIdx]?.o.map((o, i) => (
                   <div key={i} className={`opt ${sel === i ? "picked" : ""}`} onClick={() => pick(i)}>
                     <div className="oL">{"ABCD"[i]}</div>
                     <span style={{ fontWeight: 500 }}>{o}</span>
@@ -655,6 +695,56 @@ export default function Home() {
 
 // ===== Sub-components =====
 
+function BrowseHeader({ onBack }: { onBack: () => void }) {
+  return (
+    <div style={{ background: "linear-gradient(135deg,#2563EB 0%,#1D4ED8 100%)", padding: "14px 16px 18px", color: "#fff", position: "relative" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+        <button onClick={onBack} style={{ width: 32, height: 32, borderRadius: "50%", border: "none", background: "rgba(255,255,255,.18)", color: "#fff", cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>←</button>
+        <span style={{ fontSize: 15, fontWeight: 800 }}>Browse Certifications</span>
+      </div>
+      <div style={{ fontSize: 12, color: "rgba(255,255,255,.85)", paddingLeft: 42 }}>Pick a skill to verify · {ALL_SKILLS.length} certifications · 8 categories</div>
+    </div>
+  );
+}
+
+function BrowseTopBar() {
+  const [query, setQuery] = useState("");
+  return (
+    <div style={{ position: "sticky", top: 0, background: "var(--g50)", padding: "12px 20px 8px", zIndex: 3, borderBottom: "1px solid var(--g100)" }}>
+      <div style={{ position: "relative", marginBottom: 10 }}>
+        <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: "var(--g400)" }}>🔍</span>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search by skill or job role..."
+          style={{ width: "100%", padding: "11px 14px 11px 38px", border: "1px solid var(--g200)", borderRadius: 12, fontSize: 13, background: "#fff", outline: "none", fontFamily: "inherit", color: "var(--g900)" }}
+        />
+      </div>
+      <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none" }}>
+        {["All", "Accounts", "Computer", "Sales", "Tech & IT", "Design", "Marketing", "HR", "Operations"].map((chip, i) => (
+          <button
+            key={chip}
+            style={{
+              padding: "6px 12px",
+              borderRadius: 20,
+              border: i === 0 ? "1px solid var(--brand)" : "1px solid var(--g200)",
+              background: i === 0 ? "var(--brand)" : "#fff",
+              color: i === 0 ? "#fff" : "var(--g600)",
+              fontSize: 11,
+              fontWeight: 700,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+              fontFamily: "inherit",
+            }}
+          >{chip}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function StepHeader({ step, variant, onBack }: { step: 1 | 2 | 3; variant?: "pass" | "fail"; onBack: () => void }) {
   const d2 = step >= 2, d3 = step >= 3;
   const c1 = step === 1, c2 = step === 2, c3 = step === 3;
@@ -727,7 +817,7 @@ function SkillCard({ s, user, onClick }: { s: Skill; user: UserType; onClick: ()
       <div className="skill-icon" style={{ background: s.bg }}>{s.icon}</div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 15, fontWeight: 700, color: "var(--g900)" }}>{s.name}</div>
-        <div style={{ fontSize: 12, color: "var(--g500)", marginTop: 2 }}>15 Qs · 10 min · {s.n} certified</div>
+        <div style={{ fontSize: 12, color: "var(--g500)", marginTop: 2 }}>{s.qPerAttempt} Qs · {Math.round(s.timeSec/60)} min · {s.n} certified</div>
         <div style={{ marginTop: 6 }}>
           <span className="tag" style={{ background: isFree ? "var(--green-light)" : "var(--purple-light)", color: isFree ? "var(--green-dark)" : "var(--purple)" }}>
             {isFree ? "🆓 Free to attempt" : "💎 Free with Premium"}
