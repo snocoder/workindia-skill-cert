@@ -17,6 +17,8 @@ export default function Home() {
   const [quitOpen, setQuitOpen] = useState(false);
   const [sampleOpen, setSampleOpen] = useState(false);
   const [dnavOpen, setDnavOpen] = useState(false);
+  const [browseQuery, setBrowseQuery] = useState("");
+  const [browseFilter, setBrowseFilter] = useState("All");
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -65,6 +67,26 @@ export default function Home() {
 
   const activeQuestions: Question[] = getQuestionsFor(skill.name);
   const activeSkill: Skill | undefined = ALL_SKILLS.find((s) => s.name === skill.name);
+
+  // Browse filter logic
+  const CHIP_TO_CLUSTER: Record<string, string> = {
+    Accounts: "Accounts & Finance",
+    Computer: "Computer & Office",
+    Sales: "Sales & Customer Service",
+    "Tech & IT": "Tech & IT",
+    Design: "Design & Creative",
+    Marketing: "Digital Marketing",
+    HR: "HR & Recruitment",
+    Operations: "Operations",
+  };
+  const q = browseQuery.trim().toLowerCase();
+  const filteredClusters = CLUSTERS.map((c) => {
+    const matchesChip = browseFilter === "All" || c.title === CHIP_TO_CLUSTER[browseFilter];
+    if (!matchesChip) return { ...c, skills: [] };
+    const filteredSkills = !q ? c.skills : c.skills.filter((s) => s.name.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q));
+    return { ...c, skills: filteredSkills };
+  }).filter((c) => c.skills.length > 0);
+  const totalMatches = filteredClusters.reduce((acc, c) => acc + c.skills.length, 0);
 
   const nextQ = () => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -187,8 +209,13 @@ export default function Home() {
             )}
 
             <div style={{ padding: "16px 20px 4px" }}>
-              <div style={{ fontSize: 15, fontWeight: 800, color: "var(--g900)", marginBottom: 4 }}>Recommended for your profile</div>
-              <div style={{ fontSize: 12, color: "var(--g500)", marginBottom: 12 }}>Based on your job preferences</div>
+              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 12, gap: 12 }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: "var(--g900)", marginBottom: 4 }}>Recommended for your profile</div>
+                  <div style={{ fontSize: 12, color: "var(--g500)" }}>Based on your job preferences</div>
+                </div>
+                <button onClick={() => go("browse")} style={{ background: "transparent", border: "none", color: "var(--brand)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", padding: "4px 0", whiteSpace: "nowrap", flexShrink: 0 }}>See all →</button>
+              </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {SKILLS.rec.map((s) => <SkillCard key={s.name} s={s} user={user} onClick={() => { pickSkill(s.name, s.icon); go("detail"); }} />)}
               </div>
@@ -240,8 +267,13 @@ export default function Home() {
             </div>
 
             <div style={{ padding: "16px 20px 4px" }}>
-              <div style={{ fontSize: 15, fontWeight: 800, color: "var(--g900)", marginBottom: 4 }}>Popular across all jobs</div>
-              <div style={{ fontSize: 12, color: "var(--g500)", marginBottom: 12 }}>Skills every employer looks for</div>
+              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 12, gap: 12 }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: "var(--g900)", marginBottom: 4 }}>Popular across all jobs</div>
+                  <div style={{ fontSize: 12, color: "var(--g500)" }}>Skills every employer looks for</div>
+                </div>
+                <button onClick={() => go("browse")} style={{ background: "transparent", border: "none", color: "var(--brand)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", padding: "4px 0", whiteSpace: "nowrap", flexShrink: 0 }}>See all →</button>
+              </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {SKILLS.gen.map((s) => <SkillCard key={s.name} s={s} user={user} onClick={() => { pickSkill(s.name, s.icon); go("detail"); }} />)}
               </div>
@@ -329,23 +361,47 @@ export default function Home() {
         <div className={screenClass("browse")}>
           <BrowseHeader onBack={() => go("landing")} />
           <div style={{ flex: 1, overflowY: "auto", background: "var(--g50)" }}>
-            <BrowseTopBar />
-            <div style={{ padding: "8px 20px 24px" }}>
-              {CLUSTERS.map((cluster) => (
-                <div key={cluster.title} style={{ marginBottom: 20 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "#fff", border: "1px solid var(--g200)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{cluster.emoji}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: "var(--g900)" }}>{cluster.title}</div>
-                      <div style={{ fontSize: 11, color: "var(--g500)", marginTop: 1 }}>{cluster.subtitle}</div>
-                    </div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "var(--g400)", padding: "3px 8px", background: "#fff", border: "1px solid var(--g200)", borderRadius: 6, flexShrink: 0 }}>{cluster.skills.length}</div>
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {cluster.skills.map((s) => <SkillCard key={s.name} s={s} user={user} onClick={() => { pickSkill(s.name, s.icon); go("detail"); }} />)}
-                  </div>
+            <BrowseTopBar query={browseQuery} setQuery={setBrowseQuery} filter={browseFilter} setFilter={setBrowseFilter} />
+
+            {/* Result-count line — only show when filtering */}
+            {(q || browseFilter !== "All") && (
+              <div style={{ padding: "10px 20px 0", fontSize: 12, color: "var(--g500)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span>
+                  {totalMatches === 0 ? "No matches" : <><strong style={{ color: "var(--g900)" }}>{totalMatches}</strong> {totalMatches === 1 ? "result" : "results"}</>}
+                  {q && <> for &quot;<span style={{ color: "var(--g900)" }}>{browseQuery}</span>&quot;</>}
+                  {browseFilter !== "All" && <> in <span style={{ color: "var(--g900)" }}>{browseFilter}</span></>}
+                </span>
+                {(q || browseFilter !== "All") && (
+                  <button onClick={() => { setBrowseQuery(""); setBrowseFilter("All"); }} style={{ background: "transparent", border: "none", color: "var(--brand)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", padding: 0 }}>Clear</button>
+                )}
+              </div>
+            )}
+
+            <div style={{ padding: "12px 20px 24px" }}>
+              {filteredClusters.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "48px 20px", background: "#fff", border: "1px solid var(--g200)", borderRadius: 16 }}>
+                  <div style={{ fontSize: 40, marginBottom: 8 }}>🔍</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "var(--g900)", marginBottom: 4 }}>No certifications found</div>
+                  <div style={{ fontSize: 12, color: "var(--g500)", marginBottom: 16 }}>Try a different search or category</div>
+                  <button onClick={() => { setBrowseQuery(""); setBrowseFilter("All"); }} style={{ background: "var(--brand)", color: "#fff", border: "none", borderRadius: 10, padding: "10px 18px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Show all certifications</button>
                 </div>
-              ))}
+              ) : (
+                filteredClusters.map((cluster) => (
+                  <div key={cluster.title} style={{ marginBottom: 20 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 10, background: "#fff", border: "1px solid var(--g200)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{cluster.emoji}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: "var(--g900)" }}>{cluster.title}</div>
+                        <div style={{ fontSize: 11, color: "var(--g500)", marginTop: 1 }}>{cluster.subtitle}</div>
+                      </div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "var(--g400)", padding: "3px 8px", background: "#fff", border: "1px solid var(--g200)", borderRadius: 6, flexShrink: 0 }}>{cluster.skills.length}</div>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {cluster.skills.map((s) => <SkillCard key={s.name} s={s} user={user} onClick={() => { pickSkill(s.name, s.icon); go("detail"); }} />)}
+                    </div>
+                  </div>
+                ))
+              )}
 
               <div style={{ marginTop: 24, padding: 16, background: "#fff", border: "1px dashed var(--g300)", borderRadius: 12, textAlign: "center" }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "var(--g700)", marginBottom: 4 }}>Don&apos;t see your skill?</div>
@@ -707,8 +763,7 @@ function BrowseHeader({ onBack }: { onBack: () => void }) {
   );
 }
 
-function BrowseTopBar() {
-  const [query, setQuery] = useState("");
+function BrowseTopBar({ query, setQuery, filter, setFilter }: { query: string; setQuery: (q: string) => void; filter: string; setFilter: (f: string) => void }) {
   return (
     <div style={{ position: "sticky", top: 0, background: "var(--g50)", padding: "12px 20px 8px", zIndex: 3, borderBottom: "1px solid var(--g100)" }}>
       <div style={{ position: "relative", marginBottom: 10 }}>
@@ -717,29 +772,37 @@ function BrowseTopBar() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by skill or job role..."
-          style={{ width: "100%", padding: "11px 14px 11px 38px", border: "1px solid var(--g200)", borderRadius: 12, fontSize: 13, background: "#fff", outline: "none", fontFamily: "inherit", color: "var(--g900)" }}
+          placeholder="Search by skill name..."
+          style={{ width: "100%", padding: "11px 38px 11px 38px", border: "1px solid var(--g200)", borderRadius: 12, fontSize: 13, background: "#fff", outline: "none", fontFamily: "inherit", color: "var(--g900)" }}
         />
+        {query && (
+          <button onClick={() => setQuery("")} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", width: 24, height: 24, borderRadius: "50%", border: "none", background: "var(--g100)", cursor: "pointer", fontSize: 11, color: "var(--g600)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>✕</button>
+        )}
       </div>
       <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none" }}>
-        {["All", "Accounts", "Computer", "Sales", "Tech & IT", "Design", "Marketing", "HR", "Operations"].map((chip, i) => (
-          <button
-            key={chip}
-            style={{
-              padding: "6px 12px",
-              borderRadius: 20,
-              border: i === 0 ? "1px solid var(--brand)" : "1px solid var(--g200)",
-              background: i === 0 ? "var(--brand)" : "#fff",
-              color: i === 0 ? "#fff" : "var(--g600)",
-              fontSize: 11,
-              fontWeight: 700,
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-              flexShrink: 0,
-              fontFamily: "inherit",
-            }}
-          >{chip}</button>
-        ))}
+        {["All", "Accounts", "Computer", "Sales", "Tech & IT", "Design", "Marketing", "HR", "Operations"].map((chip) => {
+          const isActive = filter === chip;
+          return (
+            <button
+              key={chip}
+              onClick={() => setFilter(chip)}
+              style={{
+                padding: "6px 12px",
+                borderRadius: 20,
+                border: isActive ? "1px solid var(--brand)" : "1px solid var(--g200)",
+                background: isActive ? "var(--brand)" : "#fff",
+                color: isActive ? "#fff" : "var(--g600)",
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+                fontFamily: "inherit",
+                transition: "all .15s",
+              }}
+            >{chip}</button>
+          );
+        })}
       </div>
     </div>
   );
